@@ -12,9 +12,10 @@ How to use in your project:
 ```
 
 import (
+    ninfo "github.com/a-hydrae/windowsnetworkinfo"
     . "github.com/a-hydrae/windowsnetworkinfo/pkg"
 )
-ni := NewNetworkInfo()
+ni := ninfo.NewNetworkInfo()
 if adaptersInfo, err := ni.GetAdaptersInfo(NicType(NIC_WIRELESS802_11)); err == nil {
     for _, adptr := range adaptersInfo.Adapters {
         .....
@@ -27,9 +28,10 @@ OR
 
 ```
 import (
+    ninfo "github.com/a-hydrae/windowsnetworkinfo"
     . "github.com/a-hydrae/windowsnetworkinfo/pkg"
 )
-ni := NewNetworkInfo()
+ni := ninfo.NewNetworkInfo()
 if adaptersInfo, err := ni.GetAdaptersInfo(NicType(NIC_WIRELESS802_11)); err == nil {
     fmt.Println(adaptersInfo.ToJSON())
 }
