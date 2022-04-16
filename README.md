@@ -13,7 +13,6 @@ How to use in your project:
 
 import (
     ninfo "github.com/a-hydrae/windowsnetworkinfo"
-    . "github.com/a-hydrae/windowsnetworkinfo/pkg"
 )
 ....
 ni := ninfo.NewNetworkInfo()
@@ -32,7 +31,6 @@ OR
 ```
 import (
     ninfo "github.com/a-hydrae/windowsnetworkinfo"
-    . "github.com/a-hydrae/windowsnetworkinfo/pkg"
 )
 ...
 ni := ninfo.NewNetworkInfo()

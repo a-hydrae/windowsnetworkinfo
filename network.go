@@ -41,6 +41,39 @@ var (
 	wlanGetProfileListProc 	= 		wlanapi.NewProc("WlanGetProfileList")
 )
 
+const (
+	ERROR_BUFFER_OVERFLOW           syscall.Errno = 111
+	ERROR_SUCCESS                   syscall.Errno = 0
+)
+
+const (
+	MAX_ADAPTER_ADDRESS_LENGTH 		= 8
+	MAX_ADAPTER_DESCRIPTION_LENGTH 	= 128
+	MAX_ADAPTER_NAME_LENGTH 		= 256
+	MAX_DOMAIN_NAME_LEN 			= 128
+	MAX_HOSTNAME_LEN 				= 128
+)
+
+type NicType uint32
+
+const (
+	NIC_WIRELESS802_11		=		71
+	NIC_ATMNETOWRK			=		28
+	NIC_LOOPBACK			=		24
+	NIC_PPP					=		23
+	NIC_TOKENRING			=		9
+	NIC_ETHERNET			=		6
+)
+
+const (
+	ERROR_INVALID_PARAMETER		=	0x57
+	MYSQL_TIME_FORMAT       	= "2006-01-02 15:04:05"
+)
+
+type NICSearchFilterGUID string
+type NICSearchFilterID int
+type NICFilterType NicType
+
 type wiFiProfile struct {
 	ProfileName			string
 	Password			string
@@ -84,12 +117,12 @@ type ipAddressString struct {
 type ipAdapterInfo struct {
   Next					*ipAdapterInfo
   ComboIndex			int32
-  AdapterName			[pkg.MAX_ADAPTER_NAME_LENGTH+4]byte
-  Description			[pkg.MAX_ADAPTER_DESCRIPTION_LENGTH+4]byte
+  AdapterName			[MAX_ADAPTER_NAME_LENGTH+4]byte
+  Description			[MAX_ADAPTER_DESCRIPTION_LENGTH+4]byte
   AddressLength			uint32
-  Address				[pkg.MAX_ADAPTER_ADDRESS_LENGTH]byte
+  Address				[MAX_ADAPTER_ADDRESS_LENGTH]byte
   Index					int32
-  Type					pkg.NicType
+  Type					NicType
   DhcpEnabled			uint32
   CurrentIpAddess		*ipAddressString
   IpAddressList			ipAddressString
@@ -112,27 +145,27 @@ func (NI *NetworkInfo) GetAdaptersInfo(filters ...interface{}) (ret AdaptersInfo
 	buffSize := uint64(0)
 	r0, _, _ := getAdaptersInfoProc.Call(uintptr(0), uintptr(unsafe.Pointer(&buffSize)))
 	err = syscall.Errno(r0)
-	if err == pkg.ERROR_BUFFER_OVERFLOW {
+	if err == ERROR_BUFFER_OVERFLOW {
 		buffer := make([]byte, buffSize)
 		r0, _, _ = getAdaptersInfoProc.Call(uintptr(unsafe.Pointer(&buffer[0])), uintptr(unsafe.Pointer(&buffSize)))
 		err = syscall.Errno(r0)
-		if err == pkg.ERROR_SUCCESS {
+		if err == ERROR_SUCCESS {
 			err = nil
 			guidFilters := make([]string, 0)
 			idFilters := make([]int, 0)
-			nTypes := make([]pkg.NICFilterType, 0)
+			nTypes := make([]NICFilterType, 0)
 			if filters != nil {
 				if len(filters) > 0 {
 					for _, f := range filters {
 						switch t:=f.(type) {
-						case pkg.NICSearchFilterGUID:
+						case NICSearchFilterGUID:
 							guidFilters = append(guidFilters, string(t))
 
-						case pkg.NICSearchFilterID:
+						case NICSearchFilterID:
 							idFilters = append(idFilters, int(t))
 
-						case pkg.NicType:
-							nTypes = append(nTypes, pkg.NICFilterType(t))
+						case NicType:
+							nTypes = append(nTypes, NICFilterType(t))
 						}
 					}
 				}
@@ -179,7 +212,7 @@ func (NI *NetworkInfo) GetAdaptersInfo(filters ...interface{}) (ret AdaptersInfo
 						typeFilter = true
 					}
 					for _, nT := range nTypes {
-						if nT == pkg.NICFilterType(currentAdapterInfo.Type) {
+						if nT == NICFilterType(currentAdapterInfo.Type) {
 							typeFilter = true
 							break
 						}
@@ -292,7 +325,7 @@ func (NI *NetworkInfo) ipAdapterInfoToAdapterInfo(ipA *ipAdapterInfo) (ret Adapt
 		if ma != "" {
 			ret.MacAddress = ma
 		}
-		ret.Type = pkg.NICTypeConstToString(ipA.Type)
+		ret.Type = nicTypeConstToString(ipA.Type)
 		ret.IpAddressList = make([]string, 0)
 		ret.GatewayAddressList = make([]string, 0)
 		ret.DhcpServerList = make([]string, 0)
@@ -344,10 +377,10 @@ func (NI *NetworkInfo) ipAdapterInfoToAdapterInfo(ipA *ipAdapterInfo) (ret Adapt
 			}
 		}
 		if ipA.LeaseObtained > 0 {
-			ret.LeaseObtained = time.Unix(ipA.LeaseObtained, 0).UTC().Format(pkg.MYSQL_TIME_FORMAT)
+			ret.LeaseObtained = time.Unix(ipA.LeaseObtained, 0).UTC().Format(MYSQL_TIME_FORMAT)
 		}
 		if ipA.LeaseExpires > 0 {
-			ret.LeaseExpires = time.Unix(ipA.LeaseExpires, 0).UTC().Format(pkg.MYSQL_TIME_FORMAT)
+			ret.LeaseExpires = time.Unix(ipA.LeaseExpires, 0).UTC().Format(MYSQL_TIME_FORMAT)
 		}
 		ret.Index = ipA.Index
 		ret.ComboIndex = ipA.ComboIndex
@@ -360,4 +393,23 @@ func (NI *NetworkInfo) ipAdapterInfoToAdapterInfo(ipA *ipAdapterInfo) (ret Adapt
 func (AI AdaptersInfo) ToJSON() (ret []byte, err error) {
 	ret, err = json.Marshal(AI.Adapters)
 	return
+}
+
+func nicTypeConstToString(nType NicType) string {
+	switch nType {
+	case NIC_WIRELESS802_11:
+		return "IEEE 802.11 wireless network interface"
+	case NIC_ATMNETOWRK:
+		return "ATM network interface"
+	case NIC_LOOPBACK:
+		return "loopback network interface"
+	case  NIC_PPP:
+		return "PPP network interface"
+	case  NIC_TOKENRING:
+		return "Token Ring network interface"
+	case  NIC_ETHERNET:
+		return "Ethernet network interface"
+	default:
+		return "Other network interface"
+	}
 }

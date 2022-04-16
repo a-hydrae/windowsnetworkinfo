@@ -6,44 +6,10 @@ package pkg
 import (
 	"encoding/hex"
 	"fmt"
-	"regexp"
-	"syscall"
+	"regexp"	
 	"unicode/utf16"
 	"unsafe"
 )
-
-const (
-	ERROR_BUFFER_OVERFLOW           syscall.Errno = 111
-	ERROR_SUCCESS                   syscall.Errno = 0
-)
-
-const (
-	MAX_ADAPTER_ADDRESS_LENGTH 		= 8
-	MAX_ADAPTER_DESCRIPTION_LENGTH 	= 128
-	MAX_ADAPTER_NAME_LENGTH 		= 256
-	MAX_DOMAIN_NAME_LEN 			= 128
-	MAX_HOSTNAME_LEN 				= 128
-)
-
-type NicType uint32
-
-const (
-	NIC_WIRELESS802_11		=		71
-	NIC_ATMNETOWRK			=		28
-	NIC_LOOPBACK			=		24
-	NIC_PPP					=		23
-	NIC_TOKENRING			=		9
-	NIC_ETHERNET			=		6
-)
-
-const (
-	ERROR_INVALID_PARAMETER		=	0x57
-	MYSQL_TIME_FORMAT       	= "2006-01-02 15:04:05"
-)
-
-type NICSearchFilterGUID string
-type NICSearchFilterID int
-type NICFilterType NicType
 
 func UTF16PtrToString(p *uint16) string {
 	if p == nil {
@@ -138,25 +104,6 @@ func BufferToString(buff []byte) (ret string) {
 		}
 	}
 	return
-}
-
-func NICTypeConstToString(nType NicType) string {
-	switch nType {
-	case NIC_WIRELESS802_11:
-		return "IEEE 802.11 wireless network interface"
-	case NIC_ATMNETOWRK:
-		return "ATM network interface"
-	case NIC_LOOPBACK:
-		return "loopback network interface"
-	case  NIC_PPP:
-		return "PPP network interface"
-	case  NIC_TOKENRING:
-		return "Token Ring network interface"
-	case  NIC_ETHERNET:
-		return "Ethernet network interface"
-	default:
-		return "Other network interface"
-	}
 }
 
 func Itob(i int) bool {
