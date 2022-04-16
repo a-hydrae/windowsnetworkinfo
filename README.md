@@ -15,10 +15,13 @@ import (
     ninfo "github.com/a-hydrae/windowsnetworkinfo"
     . "github.com/a-hydrae/windowsnetworkinfo/pkg"
 )
+....
 ni := ninfo.NewNetworkInfo()
 if adaptersInfo, err := ni.GetAdaptersInfo(NicType(NIC_WIRELESS802_11)); err == nil {
     for _, adptr := range adaptersInfo.Adapters {
-        .....
+        fmt.Printf("WiFi Adapter: %s\n", adptr.AdapterName)
+        fmt.Printf("IP: %v\n", adptr.IpAddressList)
+        fmt.Printf("Profiles: %v\n", adptr.WiFiProfiles)
     }
 }
 
@@ -31,6 +34,7 @@ import (
     ninfo "github.com/a-hydrae/windowsnetworkinfo"
     . "github.com/a-hydrae/windowsnetworkinfo/pkg"
 )
+...
 ni := ninfo.NewNetworkInfo()
 if adaptersInfo, err := ni.GetAdaptersInfo(NicType(NIC_WIRELESS802_11)); err == nil {
     fmt.Println(adaptersInfo.ToJSON())
